@@ -52,7 +52,10 @@ const userSchema = mongoose.Schema({
             type:String,
             required:true
         }
-    }]
+    }],
+    avatar:{
+        type:Buffer
+    }
 },
 {
     timestamps:true
@@ -86,7 +89,7 @@ userSchema.methods.toJSON =  function(){
 
 userSchema.methods.generateAuthToken = async function(){
     const user=this;
-    const token = await jwt.sign(user._id.toString(),'testmanagerapp');
+    const token = await jwt.sign(user._id.toString(),process.env.JWT_SECRET);
     user.tokens = user.tokens.concat({token:token})
     await user.save();
     return token;

@@ -28,6 +28,11 @@ router.post('/create-task',auth, async(req,res)=>{
 
 router.get('/get-all-task',auth,async (req,res)=>{
     const myVal={};
+    const pageNo=parseInt(req.query.pageno);
+    const size= parseInt(req.query.size);
+    const query={};
+    query.skip=size*(pageNo-1);
+    query.limit=size;
     if(req.query.completed)
     {
         myVal.completed = req.query.completed ==='true';
@@ -48,7 +53,7 @@ router.get('/get-all-task',auth,async (req,res)=>{
         {
             console.log("inside else")
             console.log(req.user._id)
-            const tasks= await Task.find({owner:req.user._id});
+            const tasks= await Task.find({owner:req.user._id},{},query);
             res.send({
                 status:'success',
                 data:tasks

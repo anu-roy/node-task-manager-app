@@ -7,7 +7,31 @@ const taskRouter = require('./routers/task');
 
 const app = express();
 
-const port = process.env.PORT || 3000;
+const port = process.env.PORT;
+//regex101.com
+const multer = require('multer');
+const upload = multer({
+    dest:'images',
+    limits:{
+        fileSize:1000000
+    },
+    fileFilter(req,file,cb){
+        // if(!file.originalname.endsWith('.pdf'))
+        // {
+        //     return cb(new Error('Please upload a PDF'))
+        // }
+
+        if(!file.originalname.match(/\.(doc|docx)$/))
+        {
+            return cb(new Error('Please upload a word document'))
+        }
+        cb(undefined,true)
+    }
+});
+
+app.post('/upload',upload.single('upload'),(req,res)=>{
+    res.send()
+})
 
 // app.use((req,res,next)=>{
 //     console.log(req.path)
@@ -42,7 +66,7 @@ app.listen(port,()=>{
 //const Task = require('./models/tasks');
 //const User = require('./models/users');
 
-const main = async ()=>{
+//const main = async ()=>{
     // const task = await Task.findById('5e4021b13ab2b41fc47b63d0');
     // await task.populate('owner').execPopulate();
     // console.log(task.owner)
@@ -51,6 +75,6 @@ const main = async ()=>{
 //    // console.log(user)
 //     await user.populate('tasks').execPopulate();
 //     console.log(user)
-}
+//}
 
-main()
+//main()

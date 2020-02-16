@@ -1,4 +1,6 @@
 const express = require('express');
+const multer = require('multer');
+const sharp = require('sharp');
 const router = new express.Router();
 const User = require('../models/users');
 const auth = require('../middleware/auth')
@@ -98,6 +100,53 @@ router.get('/user/me',auth,(req,res)=>{
         status:'error',
         data:req.user
     })
+})
+
+const upload = multer({
+  //  dest:'avatars',
+    limits:{
+        fileSize:1000000
+    },
+    fileFilter(req,file,cb)
+    {
+        if(!file.originalname.match(/\.(jpg|jpeg|png)$/))
+        {
+            return cb(new Error('Uploade file format not supported'))
+        }
+        cb(undefined,true)
+    }
+})
+
+router.post('/user/me/avatar',auth, upload.single('avatar'),async(req,res)=>{
+   // req.user.avatar = req.file.buffer;
+    const buffer = await sharp(req.file.buffer).resize({width:250,height:250}).png().toBuffer();
+    req.user.avatar = buffer;
+    await req.user.save();
+    res.status(200).send()
+},(error,req,res,next)=>{
+    res.status(400).send({error:error.message})
+})
+
+router.delete('/user/me/delete',auth, async(req,res)=>{
+    req.user.avatar=undefined;
+    await req.user.save();
+    res.status(200).send();
+})
+
+router.get('/user/:id/avatar', async(req,res)=>{
+    try{
+    const user = await User.findById(req.params.id);
+    if(!user || !user.avatar)
+    {
+        throw new Error()
+    }
+    res.set('Content-Type','image/jpg');
+    res.send(user.avatar)
+}
+catch(e)
+{
+    res.status(400).send()
+}
 })
 
 router.get('/get-all-users', async (req,res)=>{
